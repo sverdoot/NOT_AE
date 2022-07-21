@@ -1,0 +1,113 @@
+[tool.poetry]
+name = "not_ae"
+version = "0.0.1"
+description = ""
+authors = []
+readme = "README.md"
+repository = ""
+documentation = "TBD"
+
+[tool.black]
+target-version = ["py38"]
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | thirdparty
+)/
+'''
+
+[tool.poetry.dependencies]
+python = "~3.8"
+numpy = "^1.19.4"
+matplotlib = "^3.3.3"
+torch = "~1.10"
+torchvision = "~0.11"
+tqdm = "^4.5"
+sklearn = ">=0"
+easydict = "^1"
+seaborn = ">=0"
+pyyaml = ">=0"
+pytorch-fid = {git = "https://github.com/mseitzer/pytorch-fid"}
+wandb = "^0.12.6"
+pyyml = "^0.0.2"
+pre-commit = "^2.15.0"
+isort = "^5.10.1"
+black = "^21.12b0"
+imageio = "^2.13.5"
+ninja = "^1.10.2"
+h5py = "^3.6.0"
+kornia = "^0.6.2"
+pandas = "^1.3.5"
+scipy = "^1.7.3"
+click = "^8.0.3"
+requests = "^2.26.0"
+pyspng = "^0.1.0"
+imageio-ffmpeg = "^0.4.5"
+prdc = "^0.2"
+gdown = "^4.2.0"
+"ruamel.yaml" = "^0.17.19"
+poetry-core = "1.0.4"
+flake8 = "^4.0.1"
+dvc = {extras = ["gdrive"], version = "^2.9.5"}
+tensorboard = "^2.8.0"
+wrapt = "^1.14.0"
+
+[tool.isort]
+src_paths = ["not_ae"]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+lines_after_imports = 2
+skip_glob = 'thirdparty'
+known_third_party = ["PIL", "gdown", "matplotlib", "numpy", "pytorch_fid", "torch", "torchvision", "tqdm"]
+
+[tool.flake8]
+min_python_version = "3.8.0"
+max-line-length = 88
+# ban-relative-imports = true
+# flake8-use-fstring: https://github.com/MichaelKim0407/flake8-use-fstring#--percent-greedy-and---format-greedy
+format-greedy = 1
+inline-quotes = "double"
+# Allow omission of a return type hint for __init__ if at least one argument is annotated
+# used by flake8-annotations
+mypy-init-return = true
+#enable-extensions = TC, TC2
+#type-checking-exempt-modules = typing, typing-extensions
+eradicate-whitelist-extend = "^-.*;"
+extend-ignore = """
+    # E203: Whitespace before ':' (pycqa/pycodestyle#373)
+    E203,
+    # SIM106: Handle error-cases first
+    SIM106,
+    # ANN101: Missing type annotation for self in method
+    ANN101,
+    # ANN102: Missing type annotation for cls in classmethod
+    ANN102,
+    # E402: module level import not at top of file
+    E402,
+    """
+#per-file-ignores =
+    # F401: Module imported by unused (non-implicit modules)
+    # TC002: Move third-party import '...' into a type-checking block
+    #__init__.py:F401,TC002,
+    # ANN201: Missing return type annotation for public function
+    #tests/test_*:ANN201
+    #tests/**/test_*:ANN201
+extend-exclude = """
+    # Frozen and not subject to change in this repo:
+    thirdparty/*,
+    not_ae/utils/fid_tf.py,
+    # # External to the project's coding standards:
+    """

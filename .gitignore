@@ -1,0 +1,35 @@
+**__pycache__
+**__ipynb_checkpoints__
+**.egg-info
+**.vscode
+
+data/*
+!data/.gitkeep
+
+thirdparty/*
+!thirdparty/.gitkeep
+
+# stats/*
+# !stats/.gitkeep
+
+fig_collection/
+dump/
+figs/
+unused/
+
+notebooks/drafts/
+# !notebooks/.gitkeep
+
+# log/*
+# !log/.gitkeep
+log/
+**/log/
+
+wandb/*
+
+**.npy
+**.npz
+**.pth
+**.pdf
+log/**/*.png
+

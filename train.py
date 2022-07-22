@@ -56,12 +56,12 @@ def train(config_path: Union[Path, str], seed: Optional[int] = None):
 
     callbacks = []
     for callback in config["callbacks"]:
-        if 'ae' in callback["params"]:
-            callback["params"]['ae'] = ae
-        if 'potential' in callback["params"]:
-            callback["params"]['potential'] = potential
-        if 'test_dataset' in callback["params"]:
-            callback["params"]['test_dataset'] = val_dataset
+        if "ae" in callback["params"]:
+            callback["params"]["ae"] = ae
+        if "potential" in callback["params"]:
+            callback["params"]["potential"] = potential
+        if "test_dataset" in callback["params"]:
+            callback["params"]["test_dataset"] = val_dataset
         callback = REGISTRY.model.create(callback["name"], **callback["params"])
         callbacks.append(callback)
 

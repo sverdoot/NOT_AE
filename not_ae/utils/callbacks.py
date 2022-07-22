@@ -31,7 +31,7 @@ class WandbCallback(Callback):
         invoke_every: int = 1,
         init_params: Optional[Dict] = None,
         keys: Optional[List[str]] = None,
-        step_key: str = "batch_id"
+        step_key: str = "batch_id",
     ):
         self.init_params = init_params if init_params else {}
         import wandb
@@ -88,7 +88,7 @@ class LogCallback(Callback):
         *,
         invoke_every: int = 1,
         resume: bool = False,
-        step_key: str = "epoch_id"
+        step_key: str = "epoch_id",
     ):
         self.save_dir = Path(save_dir)
         self.invoke_every = invoke_every
@@ -168,7 +168,13 @@ class TrainLogCallback(Callback):
 @REGISTRY.callback.register()
 class CheckpointCallback(Callback):
     def __init__(
-        self, ae, potential, save_dir: Union[str, Path], *, invoke_every: int = 1, step_key: str = "epoch_id"
+        self,
+        ae,
+        potential,
+        save_dir: Union[str, Path],
+        *,
+        invoke_every: int = 1,
+        step_key: str = "epoch_id",
     ) -> None:
         self.invoke_every = invoke_every
         self.ae = ae

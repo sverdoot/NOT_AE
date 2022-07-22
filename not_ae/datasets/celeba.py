@@ -55,11 +55,15 @@ class CelebADataset(Dataset):
         if not img_folder.exists():
             download_celeba()
 
-        list_partition = pd.read_csv(Path(root_dir, "celeba", "list_eval_partition.txt"), sep=" ", header=None)
-        
+        list_partition = pd.read_csv(
+            Path(root_dir, "celeba", "list_eval_partition.txt"), sep=" ", header=None
+        )
+
         self.image_names = {}
         for split_, value in zip(["train", "val", "test"], range(3)):
-            self.image_names[split_] = list_partition[list_partition.iloc[:, 1] == value].iloc[:, 0].tolist()
+            self.image_names[split_] = (
+                list_partition[list_partition.iloc[:, 1] == value].iloc[:, 0].tolist()
+            )
 
         self.transform = transform or T.Compose(
             [

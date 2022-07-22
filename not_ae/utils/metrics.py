@@ -1,7 +1,8 @@
 import logging
 from pathlib import Path
-from typing import Dict, Union, Tuple
+from typing import Dict, Tuple, Union
 
+import lpips
 import numpy as np
 import torch
 from pytorch_fid.fid_score import calculate_frechet_distance
@@ -9,9 +10,8 @@ from pytorch_fid.inception import InceptionV3
 from torch.nn.functional import adaptive_avg_pool2d
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
-import lpips
 
-from not_ae.datasets.common import IgnoreLabelDataset, FakeDataset
+from not_ae.datasets.common import FakeDataset, IgnoreLabelDataset
 from not_ae.utils.callbacks import Callback
 from not_ae.utils.general import REGISTRY
 
@@ -72,7 +72,7 @@ class FIDCallback(Callback):
         dims=2048,
         dp=True,
         batch_size: int = 100,
-        step_key: str = "epoch_id"
+        step_key: str = "epoch_id",
     ):
         self.invoke_every = invoke_every
         self.update_input = update_input
@@ -122,7 +122,8 @@ class FIDCallback(Callback):
 
 @REGISTRY.callback.register()
 class LPIPSCallback(Callback):
-    def __init__(self,
+    def __init__(
+        self,
         test_dataset,
         invoke_every: int = 1,
         update_input=True,
@@ -139,7 +140,7 @@ class LPIPSCallback(Callback):
         self.batch_size = batch_size
         self.step_key = step_key
 
-        self.lpips_alex = lpips.LPIPS(net='alex', use_dropout=False).to(device)
+        self.lpips_alex = lpips.LPIPS(net="alex", use_dropout=False).to(device)
         self.device = device
 
     @torch.no_grad()
@@ -150,10 +151,14 @@ class LPIPSCallback(Callback):
             fake_dataset = FakeDataset(info["imgs"], self.test_dataset.transform)
             assert len(fake_dataset) == len(self.test_dataset)
             fake_dataloader = DataLoader(fake_dataset, self.batch_size)
-            
+
             lpips_value = 0
             for batch_real, batch_fake in zip(self.test_dataloader, fake_dataloader):
-                lpips_value += self.lpips_alex(batch_real, batch_fake) * batch_fake.shape[0] / len(fake_dataset)
+                lpips_value += (
+                    self.lpips_alex(batch_real, batch_fake)
+                    * batch_fake.shape[0]
+                    / len(fake_dataset)
+                )
 
             if self.update_input:
                 info["lpips"] = lpips_value
@@ -161,4 +166,3 @@ class LPIPSCallback(Callback):
             logger.info(f"\nLPIPS: {lpips_value}")
         self.cnt += 1
         return lpips_value
-

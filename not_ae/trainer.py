@@ -91,9 +91,6 @@ class Trainer:
         self.ae.train()
         self.potential.train()
         loss_ae, loss_potential = [], []
-        # for batch_id, batch in tqdm(
-        #     enumerate(self.train_dataloader, 1), total=len(self.train_dataloader)
-        # ):
         total = n_epoch
         for epoch_id in trange(1, n_epoch + 1):
             if epoch_id < self.start_iter:
@@ -101,15 +98,12 @@ class Trainer:
             for batch_id, batch in tqdm(
                 enumerate(self.train_dataloader, 1), total=len(self.train_dataloader)
             ):
-                # if batch_id < self.start_iter:
-                #     continue
                 batch = batch.to(self.device)
                 l_ae, l_potential, grad_norm_ae, grad_norm_potential = self.step(batch)
                 loss_ae = loss_ae[-self.eval_every + 1 :] + [l_ae]
                 loss_potential = loss_potential[-self.eval_every + 1 :] + [l_potential]
 
                 info = dict(
-                    # step=batch_id,
                     step=batch_id,
                     total=total,
                     loss_ae=np.mean(loss_ae),

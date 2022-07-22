@@ -73,7 +73,7 @@ use_parentheses = true
 line_length = 88
 lines_after_imports = 2
 skip_glob = 'thirdparty'
-known_third_party = ["PIL", "fire", "gdown", "lpips", "matplotlib", "numpy", "pandas", "pytorch_fid", "ruamel", "torch", "torchvision", "tqdm"]
+known_third_party = ["PIL", "fire", "gdown", "lpips", "matplotlib", "numpy", "pandas", "pytorch_fid", "ruamel", "setuptools", "toml", "torch", "torchvision", "tqdm"]
 
 [tool.flake8]
 min_python_version = "3.8.0"

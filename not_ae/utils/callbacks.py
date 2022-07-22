@@ -31,6 +31,7 @@ class WandbCallback(Callback):
         invoke_every: int = 1,
         init_params: Optional[Dict] = None,
         keys: Optional[List[str]] = None,
+        step_key: str = "batch_id"
     ):
         self.init_params = init_params if init_params else {}
         import wandb
@@ -40,14 +41,15 @@ class WandbCallback(Callback):
 
         self.invoke_every = invoke_every
         self.keys = keys
+        self.step_key = step_key
 
         self.img_transform = transforms.Resize(
             128, interpolation=transforms.InterpolationMode.NEAREST
         )
 
     def invoke(self, info: Dict[str, Union[float, np.ndarray]]):
-        step = info.get("step", self.cnt)
-        if step % self.invoke_every == 0:
+        step = info.get(self.step_key, None)
+        if step is not None and step % self.invoke_every == 0:
             wandb = self.wandb
             if not self.keys:
                 self.keys = info.keys()
@@ -85,11 +87,13 @@ class LogCallback(Callback):
         keys: List[str],
         *,
         invoke_every: int = 1,
-        resume=False,
+        resume: bool = False,
+        step_key: str = "epoch_id"
     ):
         self.save_dir = Path(save_dir)
         self.invoke_every = invoke_every
         self.keys = keys
+        self.step_key = step_key
 
         self.save_paths = []
         for key in keys:
@@ -103,15 +107,14 @@ class LogCallback(Callback):
         self,
         info: Dict[str, Union[float, np.ndarray]],
     ):
-        step = info.get("step", self.cnt)
-        if step % self.invoke_every == 0:
+        step = info.get(self.step_key, None)
+        if step is not None and step % self.invoke_every == 0:
             for save_path, key in zip(self.save_paths, self.keys):
                 if key not in info:
                     continue
                 if isinstance(info[key], np.ndarray):
                     save_dir = Path(self.save_dir, key)
                     save_dir.mkdir(exist_ok=True)
-                    step = info.get("step", 0)
                     save_path = Path(save_dir, f"{key}_{step}.png")
                     self.plot(info[key], save_path)
                     save_path = Path(save_dir, f"{key}_{step}.pdf")
@@ -142,12 +145,13 @@ class LogCallback(Callback):
 
 @REGISTRY.callback.register()
 class TrainLogCallback(Callback):
-    def __init__(self, invoke_every: int = 1) -> None:
+    def __init__(self, invoke_every: int = 1, step_key: str = "batch_id") -> None:
         self.invoke_every = invoke_every
+        self.step_key = step_key
 
     def invoke(self, info: Dict[str, Union[float, np.ndarray]]):
-        step = info.get("step", self.cnt)
-        if step % self.invoke_every == 0:
+        step = info.get(self.step_key, None)
+        if step is not None and step % self.invoke_every == 0:
             loss_ae = info["loss_ae"]
             loss_potential = info["loss_potential"]
 
@@ -164,17 +168,18 @@ class TrainLogCallback(Callback):
 @REGISTRY.callback.register()
 class CheckpointCallback(Callback):
     def __init__(
-        self, ae, potential, save_dir: Union[str, Path], *, invoke_every: int = 1
+        self, ae, potential, save_dir: Union[str, Path], *, invoke_every: int = 1, step_key: str = "epoch_id"
     ) -> None:
         self.invoke_every = invoke_every
         self.ae = ae
         self.potential = potential
         self.save_dir = Path(save_dir, "checkpoints")
         self.save_dir.mkdir(exist_ok=True)
+        self.step_key = step_key
 
     def invoke(self, info: Dict[str, Union[float, np.ndarray]]):
-        step = info.get("step", self.cnt)
-        if step % self.invoke_every == 0:
+        step = info.get(self.step_key, None)
+        if step is not None and step % self.invoke_every == 0:
             if self.ae.dp:
                 torch.save(
                     self.ae.gen.module.state_dict(),

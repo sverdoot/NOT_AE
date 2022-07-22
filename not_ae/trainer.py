@@ -108,16 +108,20 @@ class Trainer:
                 loss_ae = loss_ae[-self.eval_every + 1 :] + [l_ae]
                 loss_potential = loss_potential[-self.eval_every + 1 :] + [l_potential]
 
-            info = dict(
-                # step=batch_id,
-                step=epoch_id,
-                total=total,
-                loss_ae=np.mean(loss_ae),
-                loss_potential=np.mean(loss_potential),
-                grad_norm_ae=grad_norm_ae,
-                grad_norm_potential=grad_norm_potential,
-            )
+                info = dict(
+                    # step=batch_id,
+                    step=batch_id,
+                    total=total,
+                    loss_ae=np.mean(loss_ae),
+                    loss_potential=np.mean(loss_potential),
+                    grad_norm_ae=grad_norm_ae,
+                    grad_norm_potential=grad_norm_potential,
+                )
 
+                for callback in self.callbacks:
+                    callback.invoke(info)
+
+            info = dict(step=epoch_id, total=n_epoch)
             if epoch_id % self.eval_every == 0:
                 self.ae.eval()
                 imgs = []
@@ -128,7 +132,6 @@ class Trainer:
                         self.ae.inverse_transform(fake_batch).detach().cpu().numpy()
                     )
                 imgs = np.concatenate(imgs, axis=0)
-
                 info.update(
                     imgs=imgs,
                 )

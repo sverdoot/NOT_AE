@@ -21,11 +21,16 @@ Make bash scripts runable
 chmod +x -R scripts/*.sh
 ```
 
+## Prepare
+
+```zsh
+python tools/compute_fid_stats.py CelebADataset stats/celeba_fid_stats_test.npz
+```
 
 ## Usage
 
 ```zsh
-python train.py train  configs/train_celeba_l2_cost.yml
+python train.py train configs/train_celeba_l2_cost.yml
 ```
 
 ## TODO

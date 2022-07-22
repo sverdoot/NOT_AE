@@ -16,19 +16,21 @@ def train(config_path: Union[Path, str], seed: Optional[int] = None):
     if seed is not None:
         random_seed(seed)
 
-    print(config)
+    print(yaml.safe_dump(config))
+
+    Path(config["save_dir"]).mkdir(exist_ok=True, parents=True)
 
     train_dataset = REGISTRY.dataset.create(
         config["dataset"]["name"], **config["dataset"]["params"], split="train"
     )
-    test_dataset = REGISTRY.dataset.create(
-        config["dataset"]["name"], **config["dataset"]["params"], split="test"
+    val_dataset = REGISTRY.dataset.create(
+        config["dataset"]["name"], **config["dataset"]["params"], split="val"
     )
     train_dataloader = DataLoader(
         train_dataset, batch_size=config["batch_size"], shuffle=True
     )
-    test_dataloader = DataLoader(
-        test_dataset, batch_size=config["batch_size"], shuffle=False
+    val_dataloader = DataLoader(
+        val_dataset, batch_size=config["batch_size"], shuffle=False
     )
 
     ae = REGISTRY.model.create(
@@ -54,6 +56,12 @@ def train(config_path: Union[Path, str], seed: Optional[int] = None):
 
     callbacks = []
     for callback in config["callbacks"]:
+        if 'ae' in callback["params"]:
+            callback["params"]['ae'] = ae
+        if 'potential' in callback["params"]:
+            callback["params"]['potential'] = potential
+        if 'test_dataset' in callback["params"]:
+            callback["params"]['test_dataset'] = val_dataset
         callback = REGISTRY.model.create(callback["name"], **callback["params"])
         callbacks.append(callback)
 
@@ -64,7 +72,7 @@ def train(config_path: Union[Path, str], seed: Optional[int] = None):
         potential_opt,
         cost,
         train_dataloader,
-        test_dataloader,
+        val_dataloader,
         callbacks,
         **config["train_params"],
     )

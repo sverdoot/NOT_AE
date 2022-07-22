@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Optional, Tuple, Union
 
 import gdown
-import numpy as np
+import pandas as pd
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms as T
@@ -23,6 +23,10 @@ def download_celeba():
     url = "https://drive.google.com/uc?id=1cNIac61PSA_LqDFYFUeyaQYekYPc75NH"
 
     download_path = Path(data_root, "img_align_celeba.zip")
+    gdown.download(url, download_path.as_posix(), quiet=False)
+
+    url = "https://drive.google.com/uc?id=0B7EVK8r0v71pY0NSMzRuSXJEVkk"
+    download_path = Path(data_root, "list_eval_partition.txt")
     gdown.download(url, download_path.as_posix(), quiet=False)
 
     with zipfile.ZipFile(download_path, "r") as ziphandler:
@@ -51,11 +55,11 @@ class CelebADataset(Dataset):
         if not img_folder.exists():
             download_celeba()
 
-        image_names = list(Path(img_folder).glob("*.jpg"))
-        rng = np.random.default_rng(12345)
-        train_list = rng.choice(image_names, int(0.9 * len(image_names)))
-        test_list = list(set(image_names) - set(train_list))
-        self.image_names = {"train": train_list, "test": test_list}
+        list_partition = pd.read_csv(Path(root_dir, "celeba", "list_eval_partition.txt"), sep=" ", header=None)
+        
+        self.image_names = {}
+        for split_, value in zip(["train", "val", "test"], range(3)):
+            self.image_names[split_] = list_partition[list_partition.iloc[:, 1] == value].iloc[:, 0].tolist()
 
         self.transform = transform or T.Compose(
             [

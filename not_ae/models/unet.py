@@ -1,8 +1,8 @@
-import functools
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+from not_ae.utils.general import REGISTRY
 
 
 class DoubleConv(nn.Module):
@@ -77,6 +77,7 @@ class OutConv(nn.Module):
         return self.conv(x)
 
 
+@REGISTRY.model.register()
 class UNet(nn.Module):
     def __init__(self, n_channels, n_classes, base_factor=32, bilinear=True):
         super(UNet, self).__init__()

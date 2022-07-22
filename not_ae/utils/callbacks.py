@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -153,7 +153,8 @@ class TrainLogCallback(Callback):
 
             logger = logging.getLogger("train")
             logger.info(
-                f"\nIteration: [{step}/{info['total']}], Loss AE: {loss_ae:.3f}, Loss Potential: {loss_potential:.3f}"
+                f"\nIteration: [{step}/{info['total']}], \
+                Loss AE: {loss_ae:.3f}, Loss Potential: {loss_potential:.3f}"
             )
 
         self.cnt += 1

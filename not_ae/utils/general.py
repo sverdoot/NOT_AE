@@ -1,5 +1,10 @@
+import inspect
+import random
 from pathlib import Path
 from typing import Any, Optional
+
+import numpy as np
+import torch
 
 
 def get_project_root() -> Path:
@@ -30,11 +35,29 @@ class BaseRegistry:
     @classmethod
     def create(cls, name: str, **kwargs) -> Any:
         model = cls.registry[name]
-        model = model(**kwargs)
-        return model
+        if inspect.isfunction(model):
+            return model
+        else:
+            return model(**kwargs)
 
 
 class REGISTRY:
     callback = BaseRegistry()
     model = BaseRegistry()
+    dataset = BaseRegistry()
     cost = BaseRegistry()
+
+
+def random_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    g = torch.Generator()
+    g.manual_seed(seed)
+
+
+def seed_worker(worker_id):
+    worker_seed = torch.initial_seed() % 2 ** 32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)

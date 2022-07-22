@@ -1,14 +1,15 @@
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union
 
 import gdown
 import numpy as np
 from PIL import Image
-from torch.utils.data import ConcatDataset, Dataset, TensorDataset
+from torch.utils.data import Dataset
 from torchvision import transforms as T
 
-from not_ae.utils.general import DATA_DIR
+from not_ae.utils.general import DATA_DIR, REGISTRY
+from not_ae.utils.transform import NormalizeInverse
 
 
 N_CIFAR_CLASSES = 10
@@ -28,26 +29,54 @@ def download_celeba():
         ziphandler.extractall(data_root)
 
 
+@REGISTRY.dataset.register()
 class CelebADataset(Dataset):
-    def __init__(self, root_dir, transform=None):
+    def __init__(
+        self,
+        root_dir: Union[str, Path] = DATA_DIR,
+        split: str = "train",
+        mean: Tuple[float, float, float] = (0.5, 0.5, 0.5),
+        std: Tuple[float, float, float] = (0.5, 0.5, 0.5),
+        img_size: int = 64,
+        transform: Optional[Any] = None,
+    ):
         """
         Args:
           root_dir (string): Directory with all the images
           transform (callable, optional): transform to be applied to each image sample
         """
+        self.split = split
         # Read names of images in the root directory
-        image_names = list(Path(root_dir).glob("*.jpg"))
+        img_folder = Path(root_dir, "celeba", "img_align_celeba")
+        if not img_folder.exists():
+            download_celeba()
 
-        self.root_dir = root_dir
-        self.transform = transform
-        self.image_names = image_names
+        image_names = list(Path(img_folder).glob("*.jpg"))
+        rng = np.random.default_rng(12345)
+        train_list = rng.choice(image_names, int(0.9 * len(image_names)))
+        test_list = list(set(image_names) - set(train_list))
+        self.image_names = {"train": train_list, "test": test_list}
+
+        self.transform = transform or T.Compose(
+            [
+                T.CenterCrop(178),  # Because each image is size (178, 218) spatially.
+                T.Resize(img_size),
+                T.ToTensor(),
+                T.Normalize(
+                    mean=mean,
+                    std=std,
+                ),
+            ]
+        )
+        self.inverse_transform = None if transform else NormalizeInverse(mean, std)
+        self.img_folder = img_folder
 
     def __len__(self):
-        return len(self.image_names)
+        return len(self.image_names[self.split])
 
     def __getitem__(self, idx):
         # Get the path to the image
-        img_path = Path(self.root_dir, self.image_names[idx])
+        img_path = Path(self.img_folder, self.image_names[self.split][idx])
         # Load image and convert it to RGB
         img = Image.open(img_path).convert("RGB")
         # Apply transformations to the image
@@ -55,29 +84,3 @@ class CelebADataset(Dataset):
             img = self.transform(img)
 
         return img
-
-
-def get_celeba_dataset(
-    mean: Tuple[float, float, float] = (0.5, 0.5, 0.5),
-    std: Tuple[float, float, float] = (0.5, 0.5, 0.5),
-    img_size: int = 64,
-) -> Dict[str, Dataset]:
-    img_folder = Path(DATA_DIR, "celeba", "img_align_celeba")
-    if not img_folder.exists():
-        download_celeba()
-    # Spatial size of training images, images are resized to this size.
-    # Transformations to be applied to each individual image sample
-    transform = T.Compose(
-        [
-            T.CenterCrop(178),  # Because each image is size (178, 218) spatially.
-            T.Resize(img_size),
-            T.ToTensor(),
-            T.Normalize(
-                mean=mean,
-                std=std,
-            ),
-        ]
-    )
-    # Load the dataset from file and apply transformations
-    celeba_dataset = CelebADataset(img_folder, transform)
-    return {"dataset": celeba_dataset}

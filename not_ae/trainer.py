@@ -6,13 +6,13 @@ import torch  # noqa: F401
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
-from tqdm import tqdm
+from tqdm import tqdm, trange
 
 
 @dataclass
 class Trainer:
     ae: nn.Module
-    potential: nn.Model
+    potential: nn.Module
     ae_opt: Optimizer
     potential_opt: Optimizer
     cost: Any
@@ -44,6 +44,7 @@ class Trainer:
         self.ae_opt.zero_grad()
         loss_ae_num = 0
         grad_norm_ae_num = 0
+
         for step_id in range(1, self.n_ae * self.grad_acc_steps + 1):
             fake_batch = self.ae(real_batch)
             score_fake = self.potential(fake_batch).squeeze()
@@ -86,30 +87,38 @@ class Trainer:
             grad_norm_potential_num,
         )
 
-    def train(self):
+    def train(self, n_epoch: int):
         self.ae.train()
         self.potential.train()
         loss_ae, loss_potential = [], []
-        for batch_id, batch in tqdm(
-            enumerate(self.train_dataloader, 1), total=len(self.train_dataloader)
-        ):
-            if batch_id < self.start_iter:
+        # for batch_id, batch in tqdm(
+        #     enumerate(self.train_dataloader, 1), total=len(self.train_dataloader)
+        # ):
+        total = n_epoch
+        for epoch_id in trange(1, n_epoch + 1):
+            if epoch_id < self.start_iter:
                 continue
-            batch = batch.to(self.device)
-            l_ae, l_potential, grad_norm_ae, grad_norm_potential = self.step(batch)
-            loss_ae = loss_ae[-self.eval_every + 1 :] + [l_ae]
-            loss_potential = loss_potential[-self.eval_every + 1 :] + [l_potential]
+            for batch_id, batch in tqdm(
+                enumerate(self.train_dataloader, 1), total=len(self.train_dataloader)
+            ):
+                # if batch_id < self.start_iter:
+                #     continue
+                batch = batch.to(self.device)
+                l_ae, l_potential, grad_norm_ae, grad_norm_potential = self.step(batch)
+                loss_ae = loss_ae[-self.eval_every + 1 :] + [l_ae]
+                loss_potential = loss_potential[-self.eval_every + 1 :] + [l_potential]
 
             info = dict(
-                step=batch_id,
-                total=len(self.train_dataloader),
+                # step=batch_id,
+                step=epoch_id,
+                total=total,
                 loss_ae=np.mean(loss_ae),
                 loss_potential=np.mean(loss_potential),
                 grad_norm_ae=grad_norm_ae,
                 grad_norm_potential=grad_norm_potential,
             )
 
-            if batch_id % self.eval_every == 0:
+            if epoch_id % self.eval_every == 0:
                 self.ae.eval()
                 imgs = []
                 for batch_id, batch in enumerate(self.test_dataloader, 1):

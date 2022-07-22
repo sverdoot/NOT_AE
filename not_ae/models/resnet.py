@@ -2,6 +2,8 @@ import numpy as np
 import torch
 from torch import nn
 
+from not_ae.utils.general import REGISTRY
+
 
 def weights_init_G(m):
     classname = m.__class__.__name__
@@ -71,6 +73,7 @@ class ResNet_G(nn.Module):
         return out
 
 
+@REGISTRY.model.register()
 class ResNet_D(nn.Module):
     "Discriminator ResNet architecture from https://github.com/harryliew/WGAN-QC"
 
@@ -169,4 +172,4 @@ class ResNetBlock(nn.Module):
                 x_s = self.bn2d_s(x_s)
         else:
             x_s = x
-        return
+        return x_s

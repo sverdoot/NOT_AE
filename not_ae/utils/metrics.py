@@ -69,7 +69,7 @@ class FIDCallback(Callback):
         update_input=True,
         device: Union[str, int, torch.device] = "cuda",
         dims=2048,
-        dp=False,
+        dp=True,
         batch_size: int = 100,
     ):
         self.invoke_every = invoke_every

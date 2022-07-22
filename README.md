@@ -12,7 +12,7 @@ curl -sSL https://install.python-poetry.org | python3 -
 poetry config virtualenvs.create false
 
 conda activate not_ae
-conda install tensorflow-gpu==2.4.1
+conda install tensorflow-gpu==2.4.1 # for TF FID computation
 poetry install
 ```
 Make bash scripts runable 
@@ -20,6 +20,20 @@ Make bash scripts runable
 ```zsh
 chmod +x -R scripts/*.sh
 ```
+
+
+## Usage
+
+```zsh
+python train.py train  configs/train_celeba_l2_cost.yml
+```
+
+## TODO
+
+* add logging inside epoch
+* add lpips metric and callback
+* add ```test.py```
+
 
 ```
 @article{korotin2022neural,

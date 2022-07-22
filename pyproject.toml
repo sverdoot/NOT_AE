@@ -61,6 +61,8 @@ flake8 = "^4.0.1"
 dvc = {extras = ["gdrive"], version = "^2.9.5"}
 tensorboard = "^2.8.0"
 wrapt = "^1.14.0"
+fire = "^0.4.0"
+lpips = "^0.1.4"
 
 [tool.isort]
 src_paths = ["not_ae"]
@@ -71,7 +73,7 @@ use_parentheses = true
 line_length = 88
 lines_after_imports = 2
 skip_glob = 'thirdparty'
-known_third_party = ["PIL", "gdown", "matplotlib", "numpy", "pytorch_fid", "torch", "torchvision", "tqdm"]
+known_third_party = ["PIL", "fire", "gdown", "matplotlib", "numpy", "pytorch_fid", "ruamel", "torch", "torchvision", "tqdm"]
 
 [tool.flake8]
 min_python_version = "3.8.0"

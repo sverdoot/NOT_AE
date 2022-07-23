@@ -77,7 +77,7 @@ class ResNet_G(nn.Module):
 class ResNet_D(nn.Module):
     "Discriminator ResNet architecture from https://github.com/harryliew/WGAN-QC"
 
-    def __init__(self, size=64, nfilter=64, nfilter_max=512, res_ratio=0.1):
+    def __init__(self, size=64, nfilter=64, nfilter_max=512, res_ratio=0.1, bn=False):
         super().__init__()
         s0 = self.s0 = 4
         nf = self.nf = nfilter
@@ -89,9 +89,10 @@ class ResNet_D(nn.Module):
 
         nf0 = min(nf, nf_max)
         nf1 = min(nf * 2, nf_max)
+
         blocks = [
-            ResNetBlock(nf0, nf0, bn=False, res_ratio=res_ratio),
-            ResNetBlock(nf0, nf1, bn=False, res_ratio=res_ratio),
+            ResNetBlock(nf0, nf0, bn=bn, res_ratio=res_ratio),
+            ResNetBlock(nf0, nf1, bn=bn, res_ratio=res_ratio),
         ]
 
         for i in range(1, nlayers + 1):
@@ -99,8 +100,8 @@ class ResNet_D(nn.Module):
             nf1 = min(nf * 2 ** (i + 1), nf_max)
             blocks += [
                 nn.AvgPool2d(3, stride=2, padding=1),
-                ResNetBlock(nf0, nf0, bn=False, res_ratio=res_ratio),
-                ResNetBlock(nf0, nf1, bn=False, res_ratio=res_ratio),
+                ResNetBlock(nf0, nf0, bn=bn, res_ratio=res_ratio),
+                ResNetBlock(nf0, nf1, bn=bn, res_ratio=res_ratio),
             ]
 
         self.conv_img = nn.Conv2d(3, 1 * nf, 3, padding=1)

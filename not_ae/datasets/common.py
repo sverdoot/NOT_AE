@@ -1,6 +1,7 @@
-from typing import Sequence
+from typing import Sequence, Tuple
 
 from torch.utils.data import Dataset
+from torchvision import transforms as T
 
 
 class TrainDataset(Dataset):
@@ -28,15 +29,19 @@ class IgnoreLabelDataset(Dataset):
 
 
 class FakeDataset(Dataset):
-    def __init__(self, dataset: Sequence, transform=None):
+    def __init__(
+        self,
+        dataset: Sequence,
+        mean: Tuple[float, float, float] = (0.5, 0.5, 0.5),
+        std: Tuple[float, float, float] = (0.5, 0.5, 0.5),
+    ):
         self.dataset = dataset
-        self.transform = transform
+        self.transform = T.Compose([T.ToTensor(), T.Normalize(mean, std)])
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, index):
         item = self.dataset[index]
-        if self.transform:
-            item = self.transform(item)
+        item = self.transform(item)
         return item

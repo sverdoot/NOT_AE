@@ -148,7 +148,7 @@ class LPIPSCallback(Callback):
         lpips_value = None
         step = info.get(self.step_key, None)
         if step is not None and step % self.invoke_every == 0:
-            fake_dataset = FakeDataset(info["imgs"], self.test_dataset.transform)
+            fake_dataset = FakeDataset(info["imgs"])
             assert len(fake_dataset) == len(self.test_dataset)
             fake_dataloader = DataLoader(fake_dataset, self.batch_size)
 

@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Dict, Optional, Union
 
@@ -9,6 +10,10 @@ from torch.utils.data import DataLoader
 
 from not_ae.trainer import Trainer
 from not_ae.utils.general import REGISTRY, random_seed
+
+
+FORMAT = "%(asctime)s %(message)s"
+logging.basicConfig(format=FORMAT, level=logging.INFO)
 
 
 def train(config_path: Union[Path, str], seed: Optional[int] = None):

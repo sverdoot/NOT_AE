@@ -64,7 +64,8 @@ class Up(nn.Module):
         # if you have padding issues, see
         # https://github.com/HaiyongJiang/U-Net-Pytorch-Unstructured-Buggy/commit/0e854509c2cea854e247a9c615f175f76fbb2e3a
         # https://github.com/xiaopeng-liao/Pytorch-UNet/commit/8ebac70e633bac59fc22bb5195e513d5832fb3bd
-        x = torch.cat([x2, x1], dim=1)
+        # x = torch.cat([x2, x1], dim=1)
+        x = x1
         return self.conv(x)
 
 
@@ -80,7 +81,7 @@ class OutConv(nn.Module):
 @REGISTRY.model.register()
 class UNet(nn.Module):
     def __init__(self, n_channels, n_classes, base_factor=32, bilinear=True):
-        super(UNet, self).__init__()
+        super().__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.bilinear = bilinear
@@ -92,10 +93,15 @@ class UNet(nn.Module):
         self.down3 = Down(4 * base_factor, 8 * base_factor)
         factor = 2 if bilinear else 1
         self.down4 = Down(8 * base_factor, 16 * base_factor // factor)
+        self.down5 = Down(16 * base_factor // factor, 16)
+        self.up0 = Up(16, 16 * base_factor, bilinear)
+        # self.up1 = Up(16 * base_factor, 8 * base_factor // factor, bilinear)
+        # self.up2 = Up(8 * base_factor, 4 * base_factor // factor, bilinear)
+        # self.up3 = Up(4 * base_factor, 2 * base_factor // factor, bilinear)
         self.up1 = Up(16 * base_factor, 8 * base_factor // factor, bilinear)
-        self.up2 = Up(8 * base_factor, 4 * base_factor // factor, bilinear)
-        self.up3 = Up(4 * base_factor, 2 * base_factor // factor, bilinear)
-        self.up4 = Up(2 * base_factor, base_factor, bilinear)
+        self.up2 = Up(8 * base_factor // factor, 4 * base_factor // factor, bilinear)
+        self.up3 = Up(4 * base_factor // factor, 2 * base_factor // factor, bilinear)
+        self.up4 = Up(2 * base_factor // factor, base_factor, bilinear)
         self.outc = OutConv(base_factor, n_classes)
 
     def forward(self, x):
@@ -104,7 +110,9 @@ class UNet(nn.Module):
         x3 = self.down2(x2)
         x4 = self.down3(x3)
         x5 = self.down4(x4)
-        x = self.up1(x5, x4)
+        x6 = self.down5(x5)
+        x = self.up0(x6, x5)
+        x = self.up1(x, x4)
         x = self.up2(x, x3)
         x = self.up3(x, x2)
         x = self.up4(x, x1)

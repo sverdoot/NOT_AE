@@ -61,8 +61,6 @@ class Trainer:
                 self.potential_opt.step()
                 self.potential_opt.zero_grad()
 
-        # print(score_fake.mean(), score_real.mean())
-
         self.ae_opt.zero_grad()
         loss_ae_num = 0
         grad_norm_ae_num = 0
@@ -70,9 +68,10 @@ class Trainer:
             fake_batch = self.ae(real_batch)
             score_fake = self.potential(fake_batch)
 
-            loss_ae = (self.cost(real_batch, fake_batch) - score_fake).mean(0)
+            loss_ae = (
+                self.cost(real_batch, fake_batch) - score_fake + score_real.detach()
+            ).mean(0)
             loss_ae /= self.grad_acc_steps
-
             loss_ae.backward()
             loss_ae_num += loss_ae.item()
             # grad_norm_ae_num += self.compute_grad_norm(self.ae) / self.grad_acc_steps
@@ -133,6 +132,7 @@ class Trainer:
                         self.ae.inverse_transform(fake_batch).detach().cpu().numpy()
                     )
                 imgs = np.concatenate(imgs, axis=0)
+                print(imgs.shape)
                 info.update(
                     imgs=imgs,
                 )

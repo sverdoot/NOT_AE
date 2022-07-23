@@ -148,17 +148,16 @@ class LPIPSCallback(Callback):
         lpips_value = None
         step = info.get(self.step_key, None)
         if step is not None and step % self.invoke_every == 0:
+            print(info["imgs"].shape)
             fake_dataset = FakeDataset(info["imgs"])
             assert len(fake_dataset) == len(self.test_dataset)
             fake_dataloader = DataLoader(fake_dataset, self.batch_size)
 
             lpips_value = 0
             for batch_real, batch_fake in zip(self.test_dataloader, fake_dataloader):
-                lpips_value += (
-                    self.lpips_alex(batch_real, batch_fake)
-                    * batch_fake.shape[0]
-                    / len(fake_dataset)
-                )
+                lpips_value += self.lpips_alex(
+                    batch_real.to(self.device), batch_fake.to(self.device)
+                ).sum().item() / len(fake_dataset)
 
             if self.update_input:
                 info["lpips"] = lpips_value

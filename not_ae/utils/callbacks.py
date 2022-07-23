@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
+from torch import nn
 from torchvision import transforms
 from torchvision.utils import make_grid
 
@@ -186,9 +187,9 @@ class CheckpointCallback(Callback):
     def invoke(self, info: Dict[str, Union[float, np.ndarray]]):
         step = info.get(self.step_key, None)
         if step is not None and step % self.invoke_every == 0:
-            if self.ae.dp:
+            if isinstance(self.ae, nn.DataParallel):
                 torch.save(
-                    self.ae.gen.module.state_dict(),
+                    self.ae.module.state_dict(),
                     Path(self.save_dir, f"ae_{step}.pth"),
                 )
                 torch.save(

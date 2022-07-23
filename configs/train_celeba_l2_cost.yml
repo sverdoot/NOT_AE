@@ -15,28 +15,30 @@ model:
       n_channels: 3
       n_classes: 3
     opt_params:
-      lr: 0.001
+      lr: 0.0003
       weight_decay: 0.0001
   potential:
     name: ResNet_D
     params:
       bn: false
     opt_params:
-      lr: 0.001
-      weight_decay: 0.001
+      lr: 0.0003
+      weight_decay: 0.0001
 
 cost:
   name: L2Cost
 
 train_params:
-  n_ae: 10 #10
+  n_ae: 10
+  n_potential: 1
   eval_every: 1
 
 wandb_init_params: &wandb_init_params
   project: &wandb_project not_ae
   entity: &wandb_account sverdoot
   name: 'celeba_l2'
-  # config: *params
+  # config: 
+  #   <<
 
 callbacks:
   - name: TrainLogCallback

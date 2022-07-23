@@ -1,5 +1,6 @@
 from typing import Sequence, Tuple
 
+import torch
 from torch.utils.data import Dataset
 from torchvision import transforms as T
 
@@ -36,12 +37,12 @@ class FakeDataset(Dataset):
         std: Tuple[float, float, float] = (0.5, 0.5, 0.5),
     ):
         self.dataset = dataset
-        self.transform = T.Compose([T.ToTensor(), T.Normalize(mean, std)])
+        self.transform = T.Normalize(mean, std)
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, index):
-        item = self.dataset[index]
+        item = torch.from_numpy(self.dataset[index]).float()
         item = self.transform(item)
         return item

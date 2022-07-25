@@ -37,12 +37,12 @@ class FakeDataset(Dataset):
         std: Tuple[float, float, float] = (0.5, 0.5, 0.5),
     ):
         self.dataset = dataset
-        self.transform = T.Normalize(mean, std)
+        self.norm_transform = T.Normalize(mean, std)
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, index):
         item = torch.from_numpy(self.dataset[index]).float()
-        item = self.transform(item)
+        item = self.norm_transform(item)
         return item

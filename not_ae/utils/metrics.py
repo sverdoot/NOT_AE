@@ -140,7 +140,7 @@ class LPIPSCallback(Callback):
         self.batch_size = batch_size
         self.step_key = step_key
 
-        self.lpips_alex = lpips.LPIPS(net="alex", use_dropout=False).to(device)
+        self.lpips_alex = lpips.LPIPS(net="alex", eval_mode=True).to(device)
         self.device = device
 
     @torch.no_grad()
@@ -148,8 +148,9 @@ class LPIPSCallback(Callback):
         lpips_value = None
         step = info.get(self.step_key, None)
         if step is not None and step % self.invoke_every == 0:
-            print(info["imgs"].shape)
-            fake_dataset = FakeDataset(info["imgs"])
+            fake_dataset = FakeDataset(
+                info["imgs"], mean=self.test_dataset.mean, std=self.test_dataset.mean
+            )
             assert len(fake_dataset) == len(self.test_dataset)
             fake_dataloader = DataLoader(fake_dataset, self.batch_size)
 

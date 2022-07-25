@@ -1,6 +1,6 @@
-n_epoch: 50
+n_epoch: 5
 batch_size: 128
-save_dir: &save_dir log/artbench_unet_resnet2_l2
+save_dir: &save_dir log/celeba_unet_dumb_l1
 device: "cuda"
 data_parallel: true
 
@@ -18,15 +18,14 @@ model:
       lr: 0.0001
       weight_decay: 0.0000000001
   potential:
-    name: ResNet_D
-    params:
-      bn: false
+    name: Dumb_D
+    params: {}
     opt_params:
       lr: 0.0001
       weight_decay: 0.0000000001
 
 cost:
-  name: L2Cost
+  name: L1Cost
 
 train_params:
   n_ae: 10
@@ -35,7 +34,7 @@ train_params:
 wandb_init_params: &wandb_init_params
   project: &wandb_project not_ae
   entity: &wandb_account sverdoot
-  name: 'artbench_l2'
+  name: 'celeba_l1_dumb'
   # config: *params
 
 callbacks:
@@ -45,7 +44,7 @@ callbacks:
       step_key: batch_id
   - name: FIDCallback
     params:
-      data_stat_path: stats/artbench_fid_stats_test.npz
+      data_stat_path: stats/celeba_fid_stats_test.npz
       invoke_every: 1
       step_key: epoch_id
   - name: LPIPSCallback
@@ -70,6 +69,14 @@ callbacks:
         - origs
       invoke_every: 10
       step_key: batch_id
+      init_params: *wandb_init_params
+  - name: WandbCallback
+    params:
+      keys:
+        - fid
+        - lpips
+      invoke_every: 1
+      step_key: epoch_id
       init_params: *wandb_init_params
   - name: CheckpointCallback
     params:

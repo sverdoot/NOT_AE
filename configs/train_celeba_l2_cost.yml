@@ -1,5 +1,5 @@
-n_epoch: 10
-batch_size: 128
+n_epoch: 5
+batch_size: 64 #128
 save_dir: &save_dir log/celeba_unet_resnet2_l2
 device: "cuda"
 data_parallel: true
@@ -12,18 +12,18 @@ model:
   ae:
     name: UNet
     params:
-      n_channels: 3
-      n_classes: 3
+      n_channels: &n_channels 3
+      n_classes: *n_channels
     opt_params:
-      lr: 0.0003
-      weight_decay: 0.0001
+      lr: 0.0001
+      weight_decay: 0.0000000001
   potential:
     name: ResNet_D
     params:
       bn: false
     opt_params:
-      lr: 0.0003
-      weight_decay: 0.0001
+      lr: 0.0001
+      weight_decay: 0.0000000001
 
 cost:
   name: L2Cost
@@ -37,13 +37,11 @@ wandb_init_params: &wandb_init_params
   project: &wandb_project not_ae
   entity: &wandb_account sverdoot
   name: 'celeba_l2'
-  # config: 
-  #   <<
 
 callbacks:
   - name: TrainLogCallback
     params:
-      invoke_every: 100
+      invoke_every: 1
       step_key: batch_id
   - name: FIDCallback
     params:

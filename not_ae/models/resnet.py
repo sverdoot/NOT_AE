@@ -14,6 +14,15 @@ def weights_init_G(m):
         nn.init.constant_(m.bias, 0)
 
 
+def weights_init_D(m):
+    classname = m.__class__.__name__
+    if classname.find("Conv") != -1:
+        nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="leaky_relu")
+    elif classname.find("BatchNorm") != -1:
+        nn.init.constant_(m.weight, 1)
+        nn.init.constant_(m.bias, 0)
+
+
 class ResNet_G(nn.Module):
     "Generator ResNet architecture from https://github.com/harryliew/WGAN-QC"
 
@@ -77,9 +86,11 @@ class ResNet_G(nn.Module):
 class ResNet_D(nn.Module):
     "Discriminator ResNet architecture from https://github.com/harryliew/WGAN-QC"
 
-    def __init__(self, size=64, nfilter=64, nfilter_max=512, res_ratio=0.1, bn=False):
+    def __init__(
+        self, size=64, nc=3, nfilter=64, nfilter_max=512, res_ratio=0.1, bn=False, s0=4
+    ):
         super().__init__()
-        s0 = self.s0 = 4
+        self.s0 = s0
         nf = self.nf = nfilter
         nf_max = self.nf_max = nfilter_max
 
@@ -104,10 +115,12 @@ class ResNet_D(nn.Module):
                 ResNetBlock(nf0, nf1, bn=bn, res_ratio=res_ratio),
             ]
 
-        self.conv_img = nn.Conv2d(3, 1 * nf, 3, padding=1)
+        self.conv_img = nn.Conv2d(nc, 1 * nf, 3, padding=1)
         self.relu = nn.LeakyReLU(0.2, inplace=True)
         self.resnet = nn.Sequential(*blocks)
         self.fc = nn.Linear(self.nf0 * s0 * s0, 1)
+
+        self.apply(weights_init_D)
 
     def forward(self, x):
         batch_size = x.size(0)

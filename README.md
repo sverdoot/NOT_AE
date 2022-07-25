@@ -37,8 +37,6 @@ python train.py train configs/train_{celeba / artbench}_{l1 / l2 / perceptual}_c
 
 ## TODO
 
-* add logging inside epoch
-* add lpips metric and callback
 * add ```test.py```
 
 

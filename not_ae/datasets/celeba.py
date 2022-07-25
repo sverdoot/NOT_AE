@@ -42,13 +42,14 @@ class CelebADataset(Dataset):
         mean: Tuple[float, float, float] = (0.5, 0.5, 0.5),
         std: Tuple[float, float, float] = (0.5, 0.5, 0.5),
         img_size: int = 64,
-        transform: Optional[Any] = None,
+        # transform: Optional[Any] = None,
     ):
         """
         Args:
           root_dir (string): Directory with all the images
           transform (callable, optional): transform to be applied to each image sample
         """
+        self.mean, self.std = mean, std
         self.split = split
         # Read names of images in the root directory
         img_folder = Path(root_dir, "celeba", "img_align_celeba")
@@ -65,18 +66,19 @@ class CelebADataset(Dataset):
                 list_partition[list_partition.iloc[:, 1] == value].iloc[:, 0].tolist()
             )
 
-        self.transform = transform or T.Compose(
+        self.norm_transform = T.Normalize(
+            mean=mean,
+            std=std,
+        )
+        self.transform = T.Compose(
             [
                 T.CenterCrop(178),  # Because each image is size (178, 218) spatially.
                 T.Resize(img_size),
                 T.ToTensor(),
-                T.Normalize(
-                    mean=mean,
-                    std=std,
-                ),
+                self.norm_transform,
             ]
         )
-        self.inverse_transform = None if transform else NormalizeInverse(mean, std)
+        self.inverse_transform = NormalizeInverse(mean, std)
         self.img_folder = img_folder
 
     def __len__(self):

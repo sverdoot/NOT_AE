@@ -62,19 +62,17 @@ class Trainer:
             score_rec = self.potential(rec_batch)
             score_real = self.potential(batch).detach()
 
-            if False:  # step_id <= 10 and epoch_id == 1:
-                loss_ae = self.cost(batch, rec_batch).mean()
-            else:
-                loss_ae = self.cost(batch, rec_batch).mean(0) + torch.clip(
-                    score_real.detach() - score_rec, min=0.0
-                ).mean(0)
-            # print(self.cost(batch, rec_batch).mean(0), score_real.mean(0), score_rec.mean(0))
+            # loss_ae = self.cost(batch, rec_batch).mean(0) + torch.clip(
+            #     score_real.detach() - score_rec, min=0.0
+            # ).mean(0)
+            loss_ae = self.cost(batch, rec_batch).mean(0) + (
+                score_real.detach() - score_rec
+            ).mean(0)
             loss_ae /= self.grad_acc_steps
             self.ae_opt.zero_grad()
             loss_ae.backward()
             loss_ae_num += loss_ae.item()
             grad_norm_ae_num += self.compute_grad_norm(self.ae) / self.grad_acc_steps
-            # print(grad_norm_ae_num)
             torch.nn.utils.clip_grad_norm_(self.ae.parameters(), 10.0)
             self.ae_opt.step()
 
@@ -89,14 +87,12 @@ class Trainer:
         score_rec = self.potential(rec_batch)
         score_real = self.potential(batch_q)
 
-        # loss_potential = torch.clip(score_rec.mean(0) - score_real.mean(0), max=10.0)
         loss_potential = score_rec.mean(0) - score_real.mean(0)
         loss_potential /= self.grad_acc_steps
         self.potential_opt.zero_grad()
         loss_potential.backward()
         loss_potential_num += loss_potential.item()
         grad_norm_potential_num += self.compute_grad_norm(self.potential)
-        # print(grad_norm_potential_num, loss_potential.item(), score_real.mean(0).item())
         torch.nn.utils.clip_grad_norm_(self.potential.parameters(), 10.0)
         self.potential_opt.step()
 

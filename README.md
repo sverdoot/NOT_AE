@@ -24,7 +24,7 @@ chmod +x -R scripts/*.sh
 ## Prepare
 
 ```zsh
-python tools/compute_fid_stats.py CelebADataset stats/celeba_fid_stats_test.npz
+python tools/compute_fid_stats.py CelebADataset stats/celeba_fid_stats_val.npz
 ```
 
 ## Usage

@@ -45,7 +45,7 @@ callbacks:
       step_key: batch_id
   - name: FIDCallback
     params:
-      data_stat_path: stats/celeba_fid_stats_test.npz
+      data_stat_path: stats/celeba_fid_stats_val.npz
       invoke_every: 1
       step_key: epoch_id
   - name: LPIPSCallback
@@ -81,7 +81,7 @@ callbacks:
       init_params: *wandb_init_params
   - name: CheckpointCallback
     params:
-      invoke_every: 10
+      invoke_every: 1
       step_key: epoch_id
       save_dir: *save_dir
       ae: null

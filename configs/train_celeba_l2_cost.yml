@@ -1,5 +1,5 @@
 n_epoch: 5
-batch_size: 64 #128
+batch_size: 128
 save_dir: &save_dir log/celeba_unet_resnet2_l2
 device: "cuda"
 data_parallel: true
@@ -45,7 +45,7 @@ callbacks:
       step_key: batch_id
   - name: FIDCallback
     params:
-      data_stat_path: stats/celeba_fid_stats_test.npz
+      data_stat_path: stats/celeba_fid_stats_val.npz
       invoke_every: 1
       step_key: epoch_id
   - name: LPIPSCallback
@@ -71,9 +71,17 @@ callbacks:
       invoke_every: 10
       step_key: batch_id
       init_params: *wandb_init_params
+  - name: WandbCallback
+    params:
+      keys:
+        - fid
+        - lpips
+      invoke_every: 1
+      step_key: epoch_id
+      init_params: *wandb_init_params
   - name: CheckpointCallback
     params:
-      invoke_every: 10
+      invoke_every: 1
       step_key: epoch_id
       save_dir: *save_dir
       ae: null

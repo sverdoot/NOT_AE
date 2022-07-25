@@ -7,8 +7,9 @@ import numpy as np
 import torch
 from pytorch_fid.fid_score import calculate_frechet_distance
 from pytorch_fid.inception import InceptionV3
+from torch import nn
 from torch.nn.functional import adaptive_avg_pool2d
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 from tqdm import tqdm
 
 from not_ae.datasets.common import FakeDataset, IgnoreLabelDataset
@@ -18,12 +19,12 @@ from not_ae.utils.general import REGISTRY
 
 @torch.no_grad()
 def get_activation_statistics(
-    dataset,
-    model,
-    dims=2048,
-    batch_size=100,
-    num_workers=1,
-    verbose=False,
+    dataset: Dataset,
+    model: nn.Module,
+    dims: int = 2048,
+    batch_size: int = 100,
+    num_workers: int = 1,
+    verbose: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     device = next(model.parameters()).device
     if len(dataset) > batch_size:
@@ -97,13 +98,13 @@ class FIDCallback(Callback):
             imgs = torch.from_numpy(info["imgs"])
             fake_dataset = [imgs]
             fake_dataset = IgnoreLabelDataset(TensorDataset(imgs))
-            fake_mu, fake_sigma = get_activation_statistics(
+            fake_mu, fake_sigma, _ = get_activation_statistics(
                 fake_dataset,
                 self.model,
                 self.dims,
                 self.batch_size,
                 num_workers=1,
-            )[:2]
+            )
 
             score = calculate_frechet_distance(
                 self.data_stat["mu"],

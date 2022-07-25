@@ -16,8 +16,9 @@ def compute_fid_stats(
     batch_size: int = 100,
     dp: bool = True,
     device="cuda",
+    split: str = "test",
 ) -> Tuple[np.ndarray, np.ndarray]:
-    dataset = REGISTRY.dataset.create(dataset_name, split="test")
+    dataset = REGISTRY.dataset.create(dataset_name, split=split)
     block_idx = InceptionV3.BLOCK_INDEX_BY_DIM[2048]
     model = InceptionV3([block_idx]).to(device)
     if dp and torch.cuda.device_count() > 1:

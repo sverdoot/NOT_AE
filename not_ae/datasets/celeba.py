@@ -1,6 +1,6 @@
 import zipfile
 from pathlib import Path
-from typing import Any, Optional, Tuple, Union
+from typing import Tuple, Union
 
 import gdown
 import pandas as pd

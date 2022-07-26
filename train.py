@@ -57,7 +57,7 @@ def train(config_path: Union[Path, str], seed: Optional[int] = None):
         potential.parameters(), **config["model"]["ae"]["opt_params"]
     )
 
-    cost = REGISTRY.model.create(config["cost"]["name"])
+    cost = REGISTRY.model.create(config["cost"]["name"]).to(config["device"])
 
     callbacks = []
     for callback in config["callbacks"]:

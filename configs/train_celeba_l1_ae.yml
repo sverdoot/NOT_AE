@@ -3,6 +3,7 @@ batch_size: 128
 save_dir: &save_dir log/celeba_unet_dumb_l1
 device: "cuda"
 data_parallel: true
+fid_test_stat_path: stats/celeba_fid_stats_test.npz
 
 dataset:
   name: CelebADataset

@@ -6,7 +6,7 @@ import torch
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
-from tqdm import tqdm, trange
+from tqdm import trange
 
 
 @dataclass
@@ -62,9 +62,6 @@ class Trainer:
             score_rec = self.potential(rec_batch)
             score_real = self.potential(batch).detach()
 
-            # loss_ae = self.cost(batch, rec_batch).mean(0) + torch.clip(
-            #     score_real.detach() - score_rec, min=0.0
-            # ).mean(0)
             loss_ae = self.cost(batch, rec_batch).mean(0) + (
                 score_real.detach() - score_rec
             ).mean(0)
@@ -78,7 +75,7 @@ class Trainer:
 
         # self.ae.eval(); self.potential.train()
         # for _ in range(1, self.n_potential + 1):
-        loss_potential = torch.zeros(1)
+        # loss_potential = torch.zeros(1)
         # while loss_potential.item() >= 0:
         # while loss_potential_num >= 0:
         batch_p = self.sample_batch().to(self.device)
@@ -90,7 +87,8 @@ class Trainer:
         loss_potential = score_rec.mean(0) - score_real.mean(0)
         loss_potential /= self.grad_acc_steps
         self.potential_opt.zero_grad()
-        loss_potential.backward()
+        if loss_potential.grad is not None:
+            loss_potential.backward()
         loss_potential_num += loss_potential.item()
         grad_norm_potential_num += self.compute_grad_norm(self.potential)
         torch.nn.utils.clip_grad_norm_(self.potential.parameters(), 10.0)

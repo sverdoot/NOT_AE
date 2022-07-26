@@ -85,12 +85,12 @@ def test(
     )
     ae = ae.to(config["device"])
     ae.load_state_dict(
-        torch.load(ae_ckpt_path, map_location=config["device"])["model_state_dict"],
+        torch.load(
+            ae_ckpt_path, map_location=config["device"]
+        ),  # ["model_state_dict"],
         strict=True,
     )
 
-    # if config["data_parallel"] and config["device"] != "cpu":
-    #     ae = nn.DataParallel(ae)
     ae.inverse_transform = test_dataset.inverse_transform
 
     images = []
@@ -98,12 +98,12 @@ def test(
         rec_batch = ae(batch.to(config["device"]))
         images.append(ae.inverse_transform(rec_batch).detach().cpu().numpy())
     images = np.concatenate(images)
-    rec_test_dataset = FakeDataset(images, (0, 0, 0), (0, 0, 0))
+    rec_test_dataset = FakeDataset(images, (0, 0, 0), (1, 1, 1))
     fid = compute_fid(ae, rec_test_dataset, config[f"fid_{split}_stat_path"])
 
     rec_test_dataset = FakeDataset(images, test_dataset.mean, test_dataset.std)
-    test_dataloader = DataLoader(rec_test_dataset, batch_size=config["batch_size"])
-    lpips_value = compute_lpips(ae, test_dataloader, rec_test_dataset)
+    rec_test_dataloader = DataLoader(rec_test_dataset, batch_size=config["batch_size"])
+    lpips_value = compute_lpips(ae, test_dataloader, rec_test_dataloader)
 
     result = dict(fid=fid, lpips=lpips_value)
     json.dump(result, Path(config["save_dir"], f"{split}_resut.json").open("w"))

@@ -2,7 +2,7 @@
 
 python train.py train configs/train_celeba_l2_cost.yml
 
-python train.py train configs/train_celeba_l2_ae.yml
+# python train.py train configs/train_celeba_l2_ae.yml
 
 python train.py train configs/train_celeba_l1_cost.yml
 
